@@ -1,0 +1,106 @@
+RealTool Code Original
+// Define headers with API keys
+const scraperHeaders = new Headers();
+scraperHeaders.append("Authorization", "Bearer K1ZtPXNiUK2noIv9xCdv4XLiQ2zqDAGl");
+
+const openAiHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer API-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'
+};
+
+const crmDatabaseUrl = "https://docs.google.com/spreadsheets/d/1hRWTt34EBEsF5-ApkfYqC7QsIKaXMm3uv_85eS4Q7aQ/edit?gid=1834828248";
+const crmApiKey = "V2-rUHbK-A10th-dHFtm-lJGsi-OrspG-yxdeh-Gma8R-oljnr";
+const crmApiUrl = "https://www.appsheet.com/template/AppDef?appName=CaptainsLeadMaster-413430562&appId=ab97ef79-7ebf-4345-bc27-9ce440e047df&quickStart=False#Manage.Integrate.External%20Services";
+
+// Request options for API fetch
+const requestOptions = {
+    method: 'GET',
+    headers: scraperHeaders,
+    redirect: 'follow'
+};
+
+// Function to fetch data from CRM Appsheet API
+async function fetchCRMData() {
+    try {
+        console.log("Fetching data from CRM Appsheet API...");
+        const response = await fetch(`${crmApiUrl}/api/v2/apps/${crmApiKey}/tables/leads`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${crmApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`CRM API Error: ${response.status} - ${await response.text()}`);
+        }
+
+        const data = await response.json();
+        console.log("CRM Data:", data);
+        return data;
+    } catch (error) {
+        console.error("Fetching CRM Data failed:", error);
+        return null;
+    }
+}
+
+// Function to fetch data from API
+async function fetchData(url) {
+    try {
+        const response = await fetch(url, requestOptions);
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+        const data = await response.json();
+        console.log("API Response:", data);
+        return data;
+    } catch (error) {
+        console.error("Fetching failed:", error);
+        return null;
+    }
+}
+
+// OpenAI API function
+async function analyzeDealWithAI(dealDetails) {
+    const apiUrl = "https://api.openai.com/v1/chat/completions";
+    const requestBody = {
+        model: "gpt-4",
+        messages: [
+            { role: "system", content: "You are a real estate investment expert specializing in creative financing and negotiation strategies." },
+            { role: "user", content: `Analyze this deal:
+
+${JSON.stringify(dealDetails, null, 2)}
+
+Provide insights on investment potential, financing strategies, and negotiation approaches.` }
+        ],
+        max_tokens: 500
+    };
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: openAiHeaders,
+            body: JSON.stringify(requestBody)
+        });
+
+        const result = await response.json();
+        console.log("AI Analysis:", result.choices[0].message.content);
+        return result.choices[0].message.content;
+    } catch (error) {
+        console.error("AI Analysis failed:", error);
+        return "Error analyzing deal.";
+    }
+}
+
+// Conversation Starters for Assistant
+console.log("Welcome to RealTool! How can I assist you today?");
+console.log("Try asking:");
+console.log("- 'Show me leads likely to sell.'");
+console.log("- 'Analyze this investment property.'");
+console.log("- 'Scrape data for a property listing.'");
+console.log("- 'Suggest negotiation strategies for this deal.'");
+console.log("- 'Automate follow-ups for my leads.'");
+
+// Example usage
+fetchCRMData();
+
